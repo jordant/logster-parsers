@@ -14,7 +14,6 @@ class OOMLogster(LogsterParser):
     def parse_line(self, line):
         '''This function should digest the contents of one line at a time, updating
         object's state variables. Takes a single argument, the line to be parsed.'''
-        print line
 
         try:
             # Apply regular expression to each line and extract interesting bits.
@@ -30,8 +29,6 @@ class OOMLogster(LogsterParser):
     def get_state(self, duration):
         '''Run any necessary calculations on the data collected from the logs
         and return a list of metric objects.'''
-        self.duration = float(duration)
-        print "OOM %s" % self.oom
 
         # Return a list of metrics objects
         return [
