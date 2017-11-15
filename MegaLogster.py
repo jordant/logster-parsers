@@ -11,6 +11,8 @@ class MegaLogster(LogsterParser):
         '''Initialize any data structures or variables needed for keeping track
         of the tasty bits we find in the log we are parsing.'''
         self.codes = {}
+        self.methods = {}
+        self.usec = []
 
     def parse_line(self, line):
         '''This function should digest the contents of one line at a time, updating
@@ -19,8 +21,16 @@ class MegaLogster(LogsterParser):
         try:
             j = json.loads(line)
             if j:
+                # status count
                 status = 'http_%s' % j['@fields']['status']
                 self.codes[status] = self.codes.get(status, 0) + 1
+
+                # method count
+                method = j['@fields']['method']
+                self.methods[method] = self.methods.get(method, 0) + 1
+
+                # usec
+                self.usec.append(j['@fields']['duration_usec'])
             else:
                 raise LogsterParsingException("failed to parse json for line %s" %s)
 
@@ -33,8 +43,15 @@ class MegaLogster(LogsterParser):
         and return a list of metric objects.'''
         self.duration = float(duration)
         objects = []
+
         for code in self.codes.keys():
-            objects.append(MetricObject(code, (self.codes[code] / self.duration), "Responses per sec"))
+            objects.append(MetricObject('code.%s' % code, (self.codes[code] / self.duration), "HTTP codes per sec"))
+
+        for method in self.methods.keys():
+            objects.append(MetricObject('method.%s' % method, (self.methods[method] / self.duration), "Methods per sec"))
+
+        if sum(self.usec):
+            objects.append(MetricObject('usec_average',(sum(self.usec)/len(self.usec)) , "Average usec"))
 
         # Return a list of metrics objects
         return objects
