@@ -30,6 +30,9 @@ class OOMLogster(LogsterParser):
         '''Run any necessary calculations on the data collected from the logs
         and return a list of metric objects.'''
 
+        if self.oom < 1:
+            return []
+
         # Return a list of metrics objects
         return [
             MetricObject("oom", self.oom, "OOM Total"),
